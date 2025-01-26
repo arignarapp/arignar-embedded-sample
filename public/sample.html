@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Arignar Launcher</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: Arial, sans-serif;
+			}
+
+			.app-container {
+				display: flex;
+				height: 100vh;
+			}
+
+			.navigation {
+				width: 250px;
+				background: #f5f5f5;
+				padding: 20px;
+				border-right: 1px solid #ddd;
+				overflow-y: auto;
+			}
+
+			.chapter-list {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+
+			.chapter-button {
+				padding: 15px;
+				font-size: 14px;
+				cursor: pointer;
+				background: white;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				text-align: left;
+				transition: all 0.2s;
+			}
+
+			.chapter-button:hover {
+				background: #f0f0f0;
+				border-color: #bbb;
+			}
+
+			.chapter-button.active {
+				background: #e6f7ff;
+				border-color: #1890ff;
+			}
+
+			.content-area {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				position: relative;
+			}
+
+			.error {
+				color: red;
+				padding: 10px;
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				background: rgba(255, 255, 255, 0.9);
+				z-index: 1000;
+				display: none;
+			}
+
+			.error.visible {
+				display: block;
+			}
+
+			iframe {
+				flex: 1;
+				width: 100%;
+				border: none;
+			}
+
+			.chapter-title {
+				font-size: 24px;
+				margin-bottom: 20px;
+				color: #333;
+			}
+
+			.chapter-info {
+				font-size: 12px;
+				color: #666;
+				margin-top: 5px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="app-container">
+			<nav class="navigation">
+				<h1 class="chapter-title">Chapters</h1>
+				<div class="chapter-list">
+					<button class="chapter-button" onclick="openChapter('chapter1')" id="btn-chapter1">
+						Chapter 1
+						<div class="chapter-info">ID: ch1 • Type: Chapter</div>
+					</button>
+					<button class="chapter-button" onclick="openChapter('chapter2')" id="btn-chapter2">
+						Chapter 2
+						<div class="chapter-info">ID: ch2 • Type: Chapter</div>
+					</button>
+				</div>
+			</nav>
+
+			<main class="content-area">
+				<div id="error-message" class="error"></div>
+				<iframe
+					id="flutterFrame"
+					allow="microphone *"
+					sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals"
+					loading="eager"
+					importance="high"
+					crossorigin="anonymous"
+				>
+				</iframe>
+			</main>
+		</div>
+
+		<script src="tokenService.js"></script>
+		<script>
+			const FLUTTER_URL = "https://www.preview.arignar.app";
+			const API_KEY = "TzFtNhAG0I64LPihrjA3p1wRuSr9KwBZ8N6pZOl1";
+
+			let currentToken = null;
+			let activeChapterId = null;
+			let messageHandler = null;
+			let flutterStatus = null; // Track Flutter's current status
+			let username = "agstudent4";
+
+			const CHAPTERS = {
+				chapter1: {
+					chapterId: "7dac08e7-8227-4d84-a34a-ca11fb6a676e",
+					referenceId: "ref1",
+					referenceType: "Chapter",
+					locale: "en",
+				},
+				chapter2: {
+					chapterId: "158e0619-5a1a-4fa8-96e4-b7e0a9470711",
+					referenceId: "ref2",
+					referenceType: "Chapter",
+					locale: "en",
+				},
+			};
+
+			function showError(message) {
+				const errorEl = document.getElementById("error-message");
+				errorEl.textContent = message;
+				errorEl.classList.add("visible");
+				setTimeout(() => {
+					errorEl.classList.remove("visible");
+				}, 5000);
+			}
+
+			const tokenService = new TokenService(API_KEY);
+
+			async function createToken() {
+				try {
+					const result = await tokenService.createToken(3600, username);
+					console.log("Token created:", result);
+					return result;
+				} catch (error) {
+					console.error("Token creation failed:", error);
+					throw error;
+				}
+			}
+
+			async function openChapter(chapterId) {
+				try {
+					console.log("Opening chapter:", chapterId);
+					// Update active state
+					if (activeChapterId) {
+						document.getElementById(`btn-${activeChapterId}`).classList.remove("active");
+					}
+					document.getElementById(`btn-${chapterId}`).classList.add("active");
+					activeChapterId = chapterId;
+
+					//If Flutter is already initialized, just send the appropriate message based on status
+					if (flutterStatus === "ARIGNAR_CHAPTER_LOADED") {
+						console.log("Flutter is already initialized, sending appropriate message based on status");
+						sendFlutterMessage("INIT_READY_STATE", {
+							chapterId: CHAPTERS[chapterId].chapterId,
+							referenceId: CHAPTERS[chapterId].referenceId,
+							referenceType: CHAPTERS[chapterId].referenceType,
+							locale: CHAPTERS[chapterId].locale,
+							profileId: "profile-123",
+						});
+						return;
+					}
+
+					if (flutterStatus === "ARIGNAR_READY") {
+						initializeContent(CHAPTERS[chapterId]);
+						return;
+					}
+
+					// Get token if needed
+					if (!currentToken) {
+						currentToken = await createToken();
+					}
+
+					const chapter = CHAPTERS[chapterId];
+					const iframe = document.getElementById("flutterFrame");
+
+					// Clean up existing message handler
+					if (messageHandler) {
+						window.removeEventListener("message", messageHandler);
+					}
+
+					// Setup new message handler
+					messageHandler = createMessageHandler(chapter);
+					window.addEventListener("message", messageHandler);
+
+					// Set iframe source
+					iframe.src =
+						`${FLUTTER_URL}/#/chapters?` +
+						`chapterID=${encodeURIComponent(chapter.chapterId)}` +
+						`&${chapter.referenceType.toLowerCase()}ID=${encodeURIComponent(chapter.referenceId)}` +
+						`&locale=${chapter.locale}`;
+				} catch (error) {
+					showError(`Failed to initialize: ${error.message}`);
+				}
+			}
+
+			function createMessageHandler(chapter) {
+				return function (event) {
+					if (event.origin !== FLUTTER_URL) return;
+
+					console.log("Received message:", event.data);
+
+					//Update Flutter status
+					flutterStatus = event.data.type;
+
+					switch (event.data.type) {
+						case "ARIGNAR_INITIATED":
+							sendFlutterMessage("INIT_AUTH", {
+								auth: {
+									username: username,
+									token: currentToken.token,
+									profileId: "profile-123",
+								},
+								navigation: chapter,
+							});
+							break;
+
+						case "AUTH_SUCCESS":
+							sendFlutterMessage("INIT_PROFILE", {
+								chapterId: chapter.chapterId,
+							});
+							break;
+
+						case "ARIGNAR_PROFILE_LOADED":
+							initializeContent(chapter);
+							break;
+
+						case "ARIGNAR_READY":
+							console.log("Flutter app ready");
+							break;
+
+						case "AUTH_ERROR":
+							showError(`Authentication error: ${event.data.error}`);
+							break;
+
+						case "ARIGNAR_ERROR":
+							showError(`Flutter error: ${event.data.error}`);
+							break;
+					}
+				};
+			}
+
+			function initializeContent(chapter) {
+				sendFlutterMessage("INIT_CHAPTER", {
+					chapterId: chapter.chapterId,
+					referenceId: chapter.referenceId,
+					referenceType: chapter.referenceType,
+					locale: chapter.locale,
+					profileId: "profile-123",
+				});
+			}
+
+			function sendFlutterMessage(type, data) {
+				const iframe = document.getElementById("flutterFrame");
+				if (iframe && iframe.contentWindow) {
+					console.log("Sending message:", { type, data });
+					iframe.contentWindow.postMessage({ type, data }, FLUTTER_URL);
+				}
+			}
+
+			// Initialize with first chapter
+			/*document.addEventListener("DOMContentLoaded", () => {
+				openChapter("chapter1");
+			});*/
+		</script>
+	</body>
+</html>
