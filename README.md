@@ -7,11 +7,11 @@ This is a simple demo of how Arignar App can be embedded in a website.
 - Node.js (v14 or higher)
 - npm
 
-## Arignar Demo users
+### Arignar Demo users
 
 Work with the Arignar team to get the demo users to be used in this demo.
 
-# API_KEY
+### API_KEY
 
 Create a new .env file in the root of the project and set the API_KEY.
 
