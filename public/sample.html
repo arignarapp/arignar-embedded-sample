@@ -112,6 +112,30 @@
             Chapter 2
             <div class="chapter-info">ID: ch2 • Type: Chapter</div>
           </button>
+          <button
+            class="chapter-button"
+            onclick="openChapter('chapter3')"
+            id="btn-chapter3"
+          >
+            Chapter 3
+            <div class="chapter-info">ID: ch3 • Type: Chapter</div>
+          </button>
+          <button
+            class="chapter-button"
+            onclick="openChapter('chapter4')"
+            id="btn-chapter4"
+          >
+            Chapter 4
+            <div class="chapter-info">ID: ch4 • Type: Chapter</div>
+          </button>
+          <button
+            class="chapter-button"
+            onclick="openChapter('chapter5')"
+            id="btn-chapter5"
+          >
+            Chapter 5
+            <div class="chapter-info">ID: ch5 • Type: Chapter</div>
+          </button>
         </div>
       </nav>
 
@@ -123,6 +147,8 @@
           sandbox="allow-scripts allow-same-origin"
           loading="lazy"
           importance="low"
+          width="75%"
+          height="90%"
         >
         </iframe>
       </main>
@@ -131,7 +157,6 @@
     <script src="tokenService.js"></script>
     <script>
       const FLUTTER_URL = "https://www.preview.arignar.app";
-      const API_KEY = "TzFtNhAG0I64LPihrjA3p1wRuSr9KwBZ8N6pZOl1";
 
       let currentToken = null;
       let activeChapterId = null;
@@ -141,15 +166,38 @@
 
       const CHAPTERS = {
         chapter1: {
-          chapterId: "7dac08e7-8227-4d84-a34a-ca11fb6a676e",
+          chapterId: "10",
           referenceId: "ref1",
           referenceType: "Chapter",
+          classCode: "ITA-KG",
           locale: "en",
         },
         chapter2: {
-          chapterId: "158e0619-5a1a-4fa8-96e4-b7e0a9470711",
+          chapterId: "2",
           referenceId: "ref2",
           referenceType: "Chapter",
+          classCode: "ITA-KG",
+          locale: "en",
+        },
+        chapter3: {
+          chapterId: "3",
+          referenceId: "ref3",
+          referenceType: "Chapter",
+          classCode: "ITA-KG",
+          locale: "en",
+        },
+        chapter4: {
+          chapterId: "4",
+          referenceId: "ref4",
+          referenceType: "Chapter",
+          classCode: "ITA-KG",
+          locale: "en",
+        },
+        chapter5: {
+          chapterId: "5",
+          referenceId: "ref5",
+          referenceType: "Chapter",
+          classCode: "ITA-KG",
           locale: "en",
         },
       };
@@ -163,7 +211,7 @@
         }, 5000);
       }
 
-      const tokenService = new TokenService(API_KEY);
+      const tokenService = new TokenService();
 
       async function createToken() {
         try {
@@ -262,6 +310,7 @@
             case "AUTH_SUCCESS":
               sendFlutterMessage("INIT_PROFILE", {
                 chapterId: chapter.chapterId,
+                classCode: chapter.classCode,
               });
               break;
 
@@ -288,6 +337,7 @@
         sendFlutterMessage("INIT_CHAPTER", {
           chapterId: chapter.chapterId,
           referenceId: chapter.referenceId,
+          classCode: chapter.classCode,
           referenceType: chapter.referenceType,
           locale: chapter.locale,
           profileId: "profile-123",
