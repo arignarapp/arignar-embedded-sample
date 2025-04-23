@@ -136,6 +136,14 @@
             Chapter 5
             <div class="chapter-info">ID: ch5 • Type: Chapter</div>
           </button>
+          <button
+            class="chapter-button"
+            onclick="openChapter('chapter6')"
+            id="btn-chapter6"
+          >
+            Chapter 6
+            <div class="chapter-info">ID: ch6 • Type: Chapter</div>
+          </button>
         </div>
       </nav>
 
@@ -162,11 +170,11 @@
       let activeChapterId = null;
       let messageHandler = null;
       let flutterStatus = null; // Track Flutter's current status
-      let username = "agstudent4";
+      let username = "22910";
 
       const CHAPTERS = {
         chapter1: {
-          chapterId: "10",
+          chapterId: "1",
           referenceId: "ref1",
           referenceType: "Chapter",
           classCode: "ITA-KG",
@@ -196,6 +204,13 @@
         chapter5: {
           chapterId: "5",
           referenceId: "ref5",
+          referenceType: "Chapter",
+          classCode: "ITA-KG",
+          locale: "en",
+        },
+        chapter6: {
+          chapterId: "16",
+          referenceId: "ref6",
           referenceType: "Chapter",
           classCode: "ITA-KG",
           locale: "en",

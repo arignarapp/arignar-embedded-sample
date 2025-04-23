@@ -101,6 +101,202 @@ You can send the below messages to the Arignar App from your website:
 19. The Web App receives the ARIGNAR_CONTENT_LOADED event and store it.
 20. The Arignar content is now successfully loaded and the user can start learning.
 
+### JSON Data Format for Events and Messages
+
+#### Events Emitted by Arignar App
+
+**ARIGNAR_INITIATED**
+
+```json
+{
+  "type": "ARIGNAR_INITIATED",
+  "data": {
+    "status": "success"
+  }
+}
+```
+
+**AUTH_SUCCESS**
+
+```json
+{
+  "type": "AUTH_SUCCESS",
+  "data": {
+    "status": "success",
+    "username": "string",
+    "token": "string"
+  }
+}
+```
+
+**ARIGNAR_PROFILE_LOADED**
+
+```json
+{
+  "type": "ARIGNAR_PROFILE_LOADED",
+  "data": {
+    "status": "success",
+    "subjectId": "string",
+    "levelId": "string"
+  }
+}
+```
+
+**ARIGNAR_CHAPTER_LOADED**
+
+```json
+{
+  "type": "ARIGNAR_CHAPTER_LOADED",
+  "data": {
+    "status": "success",
+    "chapterId": "string"
+  }
+}
+```
+
+**ARIGNAR_READY**
+
+```json
+{
+  "type": "ARIGNAR_READY",
+  "data": {
+    "status": "ready"
+  }
+}
+```
+
+**AUTH_ERROR**
+
+```json
+{
+  "type": "AUTH_ERROR",
+  "data": {
+    "error": "string",
+    "type": "auth"
+  }
+}
+```
+
+**ARIGNAR_ERROR**
+
+```json
+{
+  "type": "ARIGNAR_ERROR",
+  "error": "Error message"
+}
+```
+
+**ARIGNAR_LOGOUT**
+{
+"type": "ARIGNAR_LOGOUT",
+"data": {
+"status": "success"
+}
+}
+
+#### Messages Sent to Arignar App
+
+**INIT_AUTH**
+
+```json
+{
+  "type": "INIT_AUTH",
+  "data": {
+    "auth": {
+      "username": "string",
+      "token": "string"
+    }
+  }
+}
+
+eg:
+
+{
+  "type": "INIT_AUTH",
+  "data": {
+    "auth": {
+      "username": "username",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    }
+}
+```
+
+**INIT_PROFILE**
+
+```json
+{
+  "type": "INIT_PROFILE",
+  "data": {
+    "chapterId": "string",
+    "classCode": "string" // Optional - can be used instead of direct chapterId
+  }
+}
+
+eg:
+
+{
+  "type": "INIT_PROFILE",
+  "data": {
+    "chapterId": "10",
+    "classCode": "ITA-KG"
+  }
+}
+```
+
+**INIT_CHAPTER**
+
+```json
+
+{
+  "type": "INIT_CHAPTER",
+  "data": {
+    "chapterId": "string",
+    "classCode": "string", // Optional - can be used instead of direct chapterId
+    "locale": "string", // Optional, defaults to "ta-IN"
+      "referenceId": "string",
+
+    "referenceType": "string",
+
+    "locale": "string",
+  }
+}
+
+eg:
+
+{
+  "type": "INIT_CHAPTER",
+  "data": {
+    "chapterId": "10",
+    "referenceId": "ref1",
+    "classCode": "ITA-KG",
+    "referenceType": "Chapter",
+    "locale": "en",
+  }
+}
+```
+
+**INIT_READY_STATE**
+
+```json
+{
+  "type": "INIT_READY_STATE",
+  "data": {}
+}
+```
+
+**INIT_LOGOUT**
+
+```json
+{
+  "type": "INIT_LOGOUT",
+  "data": {}
+}
+```
+
 ## Notes
 
 In this example we are not implementing the INIT_READY_STATE directly. Rather when the user navigates to the next chapter, we are sending the INIT_READY_STATE message to the Arignar App and then on the next click of the user, we are sending the INIT_CONTENT message to the Arignar App. This will force the user to click the chapter twice to load the content. This can be improved in real implementation.
+
+```
+
+```
